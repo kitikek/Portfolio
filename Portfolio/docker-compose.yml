@@ -1,0 +1,34 @@
+services:
+
+  db:
+    image: mysql:8
+    container_name: portfolio-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: portfolio
+    ports:
+      - "3306:3306"
+
+  backend:
+    build: ./backend
+    container_name: portfolio-backend
+    restart: always
+    ports:
+      - "5000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: portfolio
+
+  frontend:
+    build: ./frontend
+    container_name: portfolio-frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
