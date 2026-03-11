@@ -86,6 +86,59 @@ app.delete('/api/v1/projects/:id', (req, res) => {
     });
 });
 
+// GET /api/v1/projects - список всех проектов
+app.get('/api/v1/projects', (req, res) => {
+    // Здесь должна быть логика получения из БД, пока вернём массив
+    res.json({
+        success: true,
+        data: []  // пустой массив, можно позже заполнить
+    });
+});
+
+// GET /api/v1/projects/:id - получить конкретный проект
+app.get('/api/v1/projects/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    // Заглушка: если id = 1, вернём тестовый проект
+    if (id === 1) {
+        res.json({
+            success: true,
+            data: {
+                id: 1,
+                name: "Пример проекта"
+            }
+        });
+    } else {
+        res.status(404).json({
+            success: false,
+            error: "Проект не найден"
+        });
+    }
+});
+
+// PUT /api/v1/projects/:id - обновить проект
+app.put('/api/v1/projects/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({
+            success: false,
+            error: "Name обязателен"
+        });
+    }
+    // Заглушка: всегда успех
+    res.json({
+        success: true,
+        data: {
+            id: id,
+            name: name
+        }
+    });
+});
+
+
+
+
+
 app.listen(3000, () => {
     console.log("Сервер запущен на порту 3000");
 });

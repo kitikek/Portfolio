@@ -1,194 +1,154 @@
 {
   "info": {
-    "_postman_id": "08821ab8-b2fd-44d2-bcd8-121e35ee728f",
+    "_postman_id": "portfolio-tests",
     "name": "Portfolio API Tests",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "52600889",
-    "_collection_link": "https://go.postman.co/collection/52600889-08821ab8-b2fd-44d2-bcd8-121e35ee728f?source=collection_link"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "GET /api/projects",
+      "name": "POST /api/v1/portfolios - Create portfolio",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "pm.test(\"Response body is an array\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData).to.be.an('array');\r",
-              "});\r",
-              "pm.test(\"Array contains expected fields (if any)\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    if (jsonData.length > 0) {\r",
-              "        pm.expect(jsonData[0]).to.have.property('id');\r",
-              "        pm.expect(jsonData[0]).to.have.property('title');\r",
-              "        pm.expect(jsonData[0]).to.have.property('description');\r",
-              "    }\r",
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Response has success true and data with id\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data).to.have.property('id');",
+              "    pm.environment.set(\"portfolioId\", jsonData.data.id);",
+              "});",
+              "pm.test(\"Title matches\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.title).to.eql(\"Test Portfolio\");",
               "});"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "method": "GET",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "POST /api/projects",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 201\", function () {\r",
-              "    pm.response.to.have.status(201);\r",
-              "});\r",
-              "pm.test(\"Response has project id\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData).to.have.property('id');\r",
-              "    // Сохраняем id для следующих тестов\r",
-              "    pm.environment.set(\"projectId\", jsonData.id);\r",
-              "});\r",
-              "pm.test(\"Title matches\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.title).to.eql(\"Новый проект\");\r",
-              "});"
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"title\": \"Новый проект\",\r\n    \"description\": \"Описание нового проекта\",\r\n    \"technologies\": [\"React\", \"Node.js\"],\r\n    \"imageUrl\": \"https://example.com/image.jpg\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          "raw": "{\n    \"userId\": 1,\n    \"title\": \"Test Portfolio\",\n    \"description\": \"This is a test portfolio\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/portfolios",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "v1", "portfolios" ]
         }
       },
       "response": []
     },
     {
-      "name": "GET /api/projects/{id}",
+      "name": "GET /api/v1/users/1/portfolios - Get portfolios by user",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "pm.test(\"Project data is correct\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.id).to.eql(pm.variables.get(\"projectId\"));\r",
-              "    pm.expect(jsonData.title).to.eql(\"Новый проект\");\r",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response has success true and data array\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});",
+              "pm.test(\"The array contains the created portfolio\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    const portfolioId = pm.environment.get(\"portfolioId\");",
+              "    const found = jsonData.data.find(p => p.id == portfolioId);",
+              "    pm.expect(found).to.exist;",
+              "    pm.expect(found.title).to.eql(\"Test Portfolio\");",
               "});"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
         "method": "GET",
-        "header": []
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/1/portfolios",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "v1", "users", "1", "portfolios" ]
+        }
       },
       "response": []
     },
     {
-      "name": "PUT /api/projects/{id}",
+      "name": "PUT /api/v1/portfolios/:id/publish - Publish portfolio",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "pm.test(\"Project title updated\", function () {\r",
-              "    const jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.title).to.eql(\"Обновлённый проект\");\r",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response has success true and message\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.message).to.include(\"published\");",
               "});"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
         "method": "PUT",
         "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"title\": \"Обновлённый проект\",\r\n    \"description\": \"Обновлённое описание\",\r\n    \"technologies\": [\"React\", \"Node.js\", \"Docker\"],\r\n    \"imageUrl\": \"https://example.com/new-image.jpg\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+        "url": {
+          "raw": "{{base_url}}/api/v1/portfolios/{{portfolioId}}/publish",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "v1", "portfolios", "{{portfolioId}}", "publish" ]
         }
       },
       "response": []
     },
     {
-      "name": "DELETE /api/projects/{id}",
+      "name": "GET /api/v1/users/1/portfolios - Verify published status",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200 or 204\", function () {\r",
-              "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);\r",
-              "});\r",
-              "// Проверим, что проект действительно удалён\r",
-              "pm.sendRequest({\r",
-              "    url: pm.variables.get(\"base_url\") + \"/api/projects/\" + pm.variables.get(\"projectId\"),\r",
-              "    method: 'GET'\r",
-              "}, function (err, res) {\r",
-              "    pm.test(\"Project is no longer available\", function () {\r",
-              "        pm.expect(res.code).to.eql(404);\r",
-              "    });\r",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Portfolio is now public\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    const portfolioId = pm.environment.get(\"portfolioId\");",
+              "    const portfolio = jsonData.data.find(p => p.id == portfolioId);",
+              "    pm.expect(portfolio).to.exist;",
+              "    pm.expect(portfolio.isPublic).to.equal(1);",
               "});"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
       "request": {
-        "method": "DELETE",
-        "header": []
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/1/portfolios",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "v1", "users", "1", "portfolios" ]
+        }
       },
       "response": []
     }

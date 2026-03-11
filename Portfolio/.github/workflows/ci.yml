@@ -22,12 +22,12 @@ jobs:
       # 3. Ждём, пока backend полностью инициализируется.
       - name: Wait for backend to be ready
         run: |
-          npm install -g wait-on
-          wait-on http://localhost:5000/api/projects -t 60000  # таймаут 60 секунд
+            npm install -g wait-on
+            wait-on http://localhost:5000/api/v1/portfolios -t 60000
 
       # 4. Устанавливаем Newman
-      - name: Install Newman
-        run: npm install -g newman
+      - name: Run Postman tests
+        run: newman run tests/portfolio.postman_collection.json -e tests/portfolio.postman_environment.json
 
       # 5. Запускаем тесты Postman, используя коллекцию и окружение
       - name: Run Postman tests
