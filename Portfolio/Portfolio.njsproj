@@ -7266,6 +7266,8 @@
     <Content Include="README.md" />
     <Content Include="backend\server.js" />
     <Content Include="backend\services\portfolio.service.js" />
+    <Content Include="tests\portfolio.postman_collection.json" />
+    <Content Include="tests\portfolio.postman_environment.json" />
     <Content Include="views\index.pug" />
     <Content Include="views\layout.pug" />
     <Content Include="views\error.pug" />
@@ -9162,6 +9164,7 @@
     <Folder Include="frontend\node_modules\yocto-queue\" />
     <Folder Include="frontend\public\" />
     <Folder Include="frontend\src\" />
+    <Folder Include="tests\" />
     <Folder Include="public\" />
     <Folder Include="public\images\" />
     <Folder Include="public\javascripts\" />
