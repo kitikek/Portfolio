@@ -17,7 +17,7 @@ jobs:
 
       # 2. Запускаем все контейнеры (db, backend, frontend) в фоне
       - name: Start containers with Docker Compose
-        run: docker compose -f Portfolio/docker-compose.yml up -d --build
+        run: docker compose up -d --build
 
       # 3. Ждём, пока backend полностью инициализируется.
       - name: Wait for backend to be ready
@@ -48,4 +48,4 @@ jobs:
       # 7. Останавливаем контейнеры после тестов (чтобы не занимали ресурсы)
       - name: Stop containers
         if: always()
-        run: docker compose -f Portfolio/docker-compose.yml down
+        run: docker compose down
