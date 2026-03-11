@@ -15,6 +15,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug current directory
+        run: pwd
+
+      - name: List files
+        run: ls -la
+
       # 2. Запускаем все контейнеры (db, backend, frontend) в фоне
       - name: Start containers with Docker Compose
         run: docker compose up -d --build
