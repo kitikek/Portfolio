@@ -16,12 +16,15 @@ jobs:
         uses: actions/checkout@v4
 
       # 2. Исправление структуры папок (если после checkout все файлы оказались во вложенной папке Portfolio)
-      - name: Move files up one level if needed
+      - name: Move all files from Portfolio (including hidden)
         run: |
           if [ -d "Portfolio" ]; then
-            mv Portfolio/* . && rmdir Portfolio
+            shopt -s dotglob          # включаем захват скрытых файлов
+            mv Portfolio/* . 2>/dev/null || true   # перемещаем всё, игнорируем ошибки
+            shopt -u dotglob          # возвращаем как было
+            rmdir Portfolio            # удаляем пустую папку
           fi
-          ls -la   # отладочный вывод содержимого
+          ls -la                       # проверяем результат
 
       # 3. Настройка Docker Buildx 
       - name: Set up Docker Buildx
