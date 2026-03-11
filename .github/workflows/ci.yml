@@ -13,11 +13,11 @@ jobs:
     steps:
       # 1. Загружаем код репозитория
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 2. Запускаем все контейнеры (db, backend, frontend) в фоне
       - name: Start containers with Docker Compose
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       # 3. Ждём, пока backend полностью инициализируется.
       - name: Wait for backend to be ready
@@ -48,4 +48,4 @@ jobs:
       # 7. Останавливаем контейнеры после тестов (чтобы не занимали ресурсы)
       - name: Stop containers
         if: always()
-        run: docker-compose down
+        run: docker compose down
