@@ -29,6 +29,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include=".github\workflows\ci.yml" />
     <Content Include="backend\app.js" />
     <Content Include="backend\controllers\portfolio.controller.js" />
     <Content Include="backend\controllers\project.controller.js" />
@@ -7273,6 +7274,8 @@
     <Content Include="views\error.pug" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include=".github\" />
+    <Folder Include=".github\workflows\" />
     <Folder Include="backend\controllers\" />
     <Folder Include="backend\" />
     <Folder Include="backend\repositories\" />
