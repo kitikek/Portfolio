@@ -1,0 +1,51 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Загружаем код репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Запускаем все контейнеры (db, backend, frontend) в фоне
+      - name: Start containers with Docker Compose
+        run: docker-compose up -d --build
+
+      # 3. Ждём, пока backend полностью инициализируется.
+      - name: Wait for backend to be ready
+        run: |
+            npm install -g wait-on
+            wait-on http://localhost:5000/api/v1/portfolios -t 60000
+
+      # 4. Устанавливаем Newman
+      - name: Run Postman tests
+        run: newman run tests/portfolio.postman_collection.json -e tests/portfolio.postman_environment.json
+
+      # 5. Запускаем тесты Postman, используя коллекцию и окружение
+      - name: Run Postman tests
+        run: |
+          newman run tests/portfolio.postman_collection.json \
+            -e tests/portfolio.postman_environment.json \
+            --reporters cli,json \
+            --reporter-json-export test-results.json
+
+      # 6. Сохраняем результаты тестов как артефакт
+      - name: Upload test results
+        if: always()               # выполняется даже при ошибке
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.json
+
+      # 7. Останавливаем контейнеры после тестов (чтобы не занимали ресурсы)
+      - name: Stop containers
+        if: always()
+        run: docker-compose down
