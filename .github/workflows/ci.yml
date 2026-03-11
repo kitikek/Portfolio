@@ -11,41 +11,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Загружаем код репозитория
+      # 1. Получение исходного кода
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Запускаем все контейнеры (db, backend, frontend) в фоне
-      - name: Start containers with Docker Compose
+      # 2. Исправление структуры папок (если после checkout все файлы оказались во вложенной папке Portfolio)
+      - name: Move files up one level if needed
+        run: |
+          if [ -d "Portfolio" ]; then
+            mv Portfolio/* . && rmdir Portfolio
+          fi
+          ls -la   # отладочный вывод содержимого
+
+      # 3. Настройка Docker Buildx 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Вход в Docker Hub (только для push в основную ветку)
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 5. Сборка и запуск контейнеров
+      - name: Build and start services with Docker Compose
         run: docker compose up -d --build
 
-      # 3. Ждём, пока backend полностью инициализируется.
-      - name: Wait for backend to be ready
+      # 6. Ожидание готовности сервисов (можно заменить на более надёжную проверку)
+      - name: Wait for services to be ready
+        run: sleep 20
+
+      # 7. Установка Newman и запуск интеграционных тестов
+      - name: Run integration tests (Postman / Newman)
         run: |
-            npm install -g wait-on
-            wait-on http://localhost:5000/api/v1/portfolios -t 60000
+          npm install -g newman
+          newman run ./tests/portfolio.postman_collection.json \
+            -e ./tests/portfolio.postman_environment.json \
+            --reporters cli,json --reporter-json-export test-results.json
 
-      # 4. Устанавливаем Newman
-      - name: Run Postman tests
-        run: newman run tests/portfolio.postman_collection.json -e tests/portfolio.postman_environment.json
+      # 8. Остановка контейнеров
+      - name: Stop services
+        run: docker compose down
 
-      # 5. Запускаем тесты Postman, используя коллекцию и окружение
-      - name: Run Postman tests
-        run: |
-          newman run tests/portfolio.postman_collection.json \
-            -e tests/portfolio.postman_environment.json \
-            --reporters cli,json \
-            --reporter-json-export test-results.json
-
-      # 6. Сохраняем результаты тестов как артефакт
+      # 9. Сохранение результатов тестов как артефакт (опционально)
       - name: Upload test results
-        if: always()               # выполняется даже при ошибке
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results.json
 
-      # 7. Останавливаем контейнеры после тестов (чтобы не занимали ресурсы)
-      - name: Stop containers
-        if: always()
-        run: docker compose down
+      # 10. Сборка и публикация образов на Docker Hub (только для main)
+      - name: Build and push Docker images (on main branch)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/portfolio-backend:latest ./backend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/portfolio-frontend:latest ./frontend
+          docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-backend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/portfolio-frontend:latest
